@@ -13,11 +13,11 @@ export const tokenProvider = async () => {
     if(!apiKey) throw new Error('No API key');
     if(!apiSecret) throw new Error('No API secret');
 
-    const client = new StreamClient(apiKey, apiSecret); // as doing this server side, use node-sdk
-
-    const validity = 60 * 60;
-
-    const token = client.generateUserToken({ user_id: user.id, validity_in_seconds: validity });
+    const streamClient = new StreamClient(apiKey, apiSecret); // as doing this server side, use node-sdk
+    const expirationTime = Math.floor(Date.now() / 1000) + 3600;
+    const issuedAt = Math.floor(Date.now() / 1000) - 60;
+  
+    const token = streamClient.createToken(user.id, expirationTime, issuedAt);
 
     return token;
 };
