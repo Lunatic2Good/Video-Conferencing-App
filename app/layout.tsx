@@ -18,7 +18,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Zoom",
+  title: "Meets",
   description: "Video Calling app",
   icons: {
     icon: '/icons/logo.svg',
@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <ClerkProvider appearance={{
       layout: {
-        logoImageUrl: 'icons/yoom-logo.svg',
+        logoImageUrl: 'icons/video-calling.png',
         socialButtonsVariant: 'iconButton'
       },
       variables: {
