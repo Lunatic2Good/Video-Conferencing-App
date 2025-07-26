@@ -2,6 +2,11 @@
 
 This project is a full-stack **serverless feedback management system** built using AWS services, Next.js (React), Tailwind, Clerk for auth, and Stream SDK for video calling. It allows users to submit feedback (with screenshots), analyzes sentiment using Amazon Comprehend, and routes data through a scalable, event-driven architecture.
 
+![AWS](https://img.shields.io/badge/AWS-Lambda-orange)
+![Next.js](https://img.shields.io/badge/Next.js-React-blue)
+![Clerk](https://img.shields.io/badge/Auth-Clerk-blueviolet)
+![Stream](https://img.shields.io/badge/Video-Stream-green)
+
 ---
 
 ## 📌 Features
@@ -14,6 +19,7 @@ This project is a full-stack **serverless feedback management system** built usi
 - 🔐 Admin dashboard secured with Clerk
 - 🎥 Video calling enabled via Stream Video SDK
 - ✅ Fully serverless, event-driven architecture with Lambda, SNS, SQS
+- 📹 Video call recording and custom controls (mute, camera, screen share)
 
 ---
 
@@ -85,80 +91,58 @@ A3 --> Stream
 
 ---
 
-## 📦 Folder Structure
+## 🔐 Authentication & Video Integration
+
+### Clerk (User Authentication)
+The app uses **Clerk** to handle authentication. Users must sign in to submit feedback or access the admin panel. Clerk manages sessions and provides JWT tokens used to secure API calls.
+
+### Stream Video SDK (Video Conferencing)
+Users can initiate or join video calls using **Stream Video SDK**, providing a high-quality WebRTC-based communication layer integrated directly into the frontend.
+
+---
+
+## 🎥 Stream Video SDK Features
+
+- **Recording Enabled**: Users can record video calls (configured via Stream backend).
+- **Custom Call Controls**:
+  - Mute/Unmute mic
+  - Enable/Disable camera
+  - Leave button
+  - Screen sharing
+- **Participant View Customization**:
+  - Admins can view participant layout
+  - Grid and speaker view support
+
+---
+
+## 📦 Project Structure (Lambda)
 
 ```
-.
-├── frontend/
-│   ├── pages/
-│   │   ├── index.jsx
-│   │   ├── admin.jsx
-│   │   └── video.jsx
-│   ├── components/
-│   ├── utils/
-│   └── styles/
-├── lambdas/
-│   ├── UploadURLHandler.js
-│   ├── FeedbackHandler.js
-│   ├── StoreToDBWorker.js
-│   ├── SendAlertWorker.js
-│   └── GetAdminFeedbacks.js
-├── infra/
-│   └── (SAM / Terraform templates if used)
-├── README.md
-```
-
----
-
-## 🛠 Setup Instructions
-
-### 1. 🧾 Prerequisites
-
-- AWS Account
-- Node.js v18+ (or AWS Lambda compatible version)
-- Clerk project (get API keys from https://clerk.dev)
-- Stream project (get video keys from https://getstream.io)
-
----
-
-### 2. 🔐 Setup Clerk Auth
-
-- Add Clerk provider in `_app.jsx`
-- Protect routes like `/admin` using `useAuth()` and `RedirectToSignIn`
-
----
-
-### 3. ☁️ Deploy Backend
-
-You can deploy the Lambda functions using AWS Console (via zip), or automate using AWS SAM or Terraform.
-
-Example:
-```bash
-zip -r FeedbackHandler.zip .
-aws lambda update-function-code   --function-name FeedbackHandler   --zip-file fileb://FeedbackHandler.zip
+lambdas/
+├── UploadURLHandler.mjs
+├── FeedbackHandler.mjs
+├── StoreToDBWorker.mjs
+├── SendAlertWorker.mjs
+└── GetAdminFeedbacks.mjs
 ```
 
 ---
 
-### 4. 🚀 Run Frontend Locally
+## 🖥️ Admin Dashboard
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-- Visit `http://localhost:3000` to see the app.
-- Admin route: `/admin`
-- Video call route: `/video`
+- Displays feedback text, sentiment, timestamp, and screenshot preview.
+- Auto-updated via API call to `GET /admin-feedbacks`.
 
 ---
 
-## 📸 Screenshot Example
+## 🚀 Deployment Steps
 
-| Feedback with Screenshot | Admin Dashboard |
-|--------------------------|-----------------|
-| ![](./public/feedback.png) | ![](./public/admin.png) |
+1. Deploy Lambdas via AWS Console or CDK.
+2. Create DynamoDB table: `FeedbackTable`
+3. Create S3 Bucket: `video-feedback-screenshots`
+4. Set up SNS topic and two SQS queues.
+5. Connect frontend with Clerk + Stream.
+6. Deploy frontend on Vercel or Netlify.
 
 ---
 
@@ -173,15 +157,18 @@ npm run dev
 
 ---
 
-## 🧪 Testing
+## 🌐 Live Demo
 
-Use Postman or `curl`:
-```bash
-curl -X POST https://<api>/feedback   -H "Content-Type: application/json"   -d '{"feedbackText":"Service was slow", "screenshotKey":"screenshot.png"}'
-```
+🔗 [Try the App Here](https://video-conferencing-app-eight.vercel.app)
 
 ---
 
-## 🧾 License
+## 📄 License
 
-MIT © [Your Name]
+This project is licensed under the MIT License.
+
+---
+
+## 🙌 Author
+
+Built by Himesh Tyagi — DevOps & Cloud Enthusiast
