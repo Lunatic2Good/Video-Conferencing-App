@@ -3,9 +3,17 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+type Feedback = {
+  feedbackId: string;
+  text: string;
+  sentiment: "POSITIVE" | "NEGATIVE" | "NEUTRAL";
+  timestamp: string;
+  screenshotUrl?: string;
+};
+
 export default function AdminPage() {
-  const [feedbacks, setFeedbacks] = useState([]);
-  const [filteredFeedbacks, setFilteredFeedbacks] = useState([]);
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [filteredFeedbacks, setFilteredFeedbacks] = useState<Feedback[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sentimentFilter, setSentimentFilter] = useState("ALL");
 
