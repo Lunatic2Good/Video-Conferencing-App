@@ -23,6 +23,11 @@ export const sidebarLinks = [
         label: 'Personal Room',
         route: '/personal-room',
         imgUrl: '/icons/add-personal.svg'
+    },
+    {
+        label: 'Feedback',
+        route: '/feedback',
+        imgUrl: '/icons/feedback.svg'
     }
 ]
 
@@ -31,5 +36,6 @@ export const avatarImages = [
     '/images/avatar-2.jpeg',
     '/images/avatar-3.png',
     '/images/avatar-4.png',
+    '/images/avatar-5.png',
     '/images/avatar-5.png',
 ]

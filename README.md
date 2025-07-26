@@ -1,36 +1,187 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📣 Serverless Feedback Analyzer System
 
-## Getting Started
+This project is a full-stack **serverless feedback management system** built using AWS services, Next.js (React), Tailwind, Clerk for auth, and Stream SDK for video calling. It allows users to submit feedback (with screenshots), analyzes sentiment using Amazon Comprehend, and routes data through a scalable, event-driven architecture.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 📌 Features
+
+- ✍️ Feedback form with optional screenshot upload
+- 📤 Screenshot stored securely in Amazon S3
+- 🧠 Sentiment analysis + key phrase extraction using Amazon Comprehend
+- 📩 Negative feedback alerts via Amazon SES
+- 🗃 Feedback storage in DynamoDB
+- 🔐 Admin dashboard secured with Clerk
+- 🎥 Video calling enabled via Stream Video SDK
+- ✅ Fully serverless, event-driven architecture with Lambda, SNS, SQS
+
+---
+
+## 🧠 High-Level Architecture (HLD)
+
+```mermaid
+graph TD
+
+subgraph Frontend [Next.js Frontend]
+    A1[Feedback Form]
+    A2[Admin Page]
+    A3[Video Call Page]
+end
+
+subgraph Auth
+    Clerk[🔐 Clerk Auth]
+end
+
+subgraph Video
+    Stream[🎥 Stream Video SDK]
+end
+
+subgraph AWS
+    APIGW[API Gateway]
+    UploadLambda[UploadURLHandler Lambda]
+    FeedbackLambda[FeedbackHandler Lambda]
+    GetAdminLambda[GetAdminFeedbacks Lambda]
+    S3[(S3: Screenshots)]
+    SNS[SNS Topic: FeedbackTopic]
+    DBQueue[SQS: StoreToDBQueue]
+    AlertQueue[SQS: AlertQueue]
+    DBWorker[StoreToDBWorker Lambda]
+    AlertWorker[SendAlertWorker Lambda]
+    Comprehend[Comprehend]
+    SES[SES: Email]
+    Dynamo[(DynamoDB: FeedbackTable)]
+end
+
+A1 -->|GET /upload-url| APIGW --> UploadLambda --> S3
+A1 -->|POST /feedback| APIGW --> FeedbackLambda --> Comprehend
+FeedbackLambda --> SNS
+SNS --> DBQueue --> DBWorker --> Dynamo
+SNS --> AlertQueue --> AlertWorker --> SES
+A2 -->|GET /admin-feedbacks| APIGW --> GetAdminLambda --> Dynamo
+A1 --> Clerk
+A2 --> Clerk
+A3 --> Clerk
+A3 --> Stream
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🏗 Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Frontend:
+- Next.js + React + Tailwind CSS
+- Clerk (Auth)
+- Stream Video SDK (Video calling)
+- ShadCN UI (toasts & components)
 
-## Learn More
+### Backend:
+- AWS Lambda
+- Amazon API Gateway
+- Amazon DynamoDB
+- Amazon S3
+- Amazon SNS + SQS
+- Amazon SES (for email)
+- Amazon Comprehend (for sentiment)
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📦 Folder Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+.
+├── frontend/
+│   ├── pages/
+│   │   ├── index.jsx
+│   │   ├── admin.jsx
+│   │   └── video.jsx
+│   ├── components/
+│   ├── utils/
+│   └── styles/
+├── lambdas/
+│   ├── UploadURLHandler.js
+│   ├── FeedbackHandler.js
+│   ├── StoreToDBWorker.js
+│   ├── SendAlertWorker.js
+│   └── GetAdminFeedbacks.js
+├── infra/
+│   └── (SAM / Terraform templates if used)
+├── README.md
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠 Setup Instructions
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 1. 🧾 Prerequisites
+
+- AWS Account
+- Node.js v18+ (or AWS Lambda compatible version)
+- Clerk project (get API keys from https://clerk.dev)
+- Stream project (get video keys from https://getstream.io)
+
+---
+
+### 2. 🔐 Setup Clerk Auth
+
+- Add Clerk provider in `_app.jsx`
+- Protect routes like `/admin` using `useAuth()` and `RedirectToSignIn`
+
+---
+
+### 3. ☁️ Deploy Backend
+
+You can deploy the Lambda functions using AWS Console (via zip), or automate using AWS SAM or Terraform.
+
+Example:
+```bash
+zip -r FeedbackHandler.zip .
+aws lambda update-function-code   --function-name FeedbackHandler   --zip-file fileb://FeedbackHandler.zip
+```
+
+---
+
+### 4. 🚀 Run Frontend Locally
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+- Visit `http://localhost:3000` to see the app.
+- Admin route: `/admin`
+- Video call route: `/video`
+
+---
+
+## 📸 Screenshot Example
+
+| Feedback with Screenshot | Admin Dashboard |
+|--------------------------|-----------------|
+| ![](./public/feedback.png) | ![](./public/admin.png) |
+
+---
+
+## 📬 Feedback Flow Summary
+
+1. User submits feedback
+2. Lambda runs sentiment & key phrase analysis
+3. SNS fanout:
+   - One queue stores feedback into DynamoDB
+   - One queue triggers SES email on negative sentiment
+4. Admin dashboard fetches all feedbacks (with screenshots)
+
+---
+
+## 🧪 Testing
+
+Use Postman or `curl`:
+```bash
+curl -X POST https://<api>/feedback   -H "Content-Type: application/json"   -d '{"feedbackText":"Service was slow", "screenshotKey":"screenshot.png"}'
+```
+
+---
+
+## 🧾 License
+
+MIT © [Your Name]
