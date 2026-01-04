@@ -171,4 +171,4 @@ This project is licensed under the MIT License.
 
 ## 🙌 Author
 
-Built by Himesh Tyagi — DevOps & Cloud Enthusiast
+Built by Passionate Devops Engineer.
